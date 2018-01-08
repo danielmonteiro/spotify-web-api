@@ -70,20 +70,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+module.exports = __webpack_require__(1).default;
 
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-var API_URL = exports.API_URL = 'https://api.spotify.com/v1';
 
 /***/ }),
 /* 1 */
@@ -95,9 +90,47 @@ var API_URL = exports.API_URL = 'https://api.spotify.com/v1';
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var toJSON = exports.toJSON = function toJSON(data) {
-  return data.json();
-};
+exports.SpotifyWrapper = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _search = __webpack_require__(2);
+
+var _search2 = _interopRequireDefault(_search);
+
+var _album = __webpack_require__(3);
+
+var _album2 = _interopRequireDefault(_album);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var SpotifyWrapper = exports.SpotifyWrapper = function () {
+  function SpotifyWrapper(options) {
+    _classCallCheck(this, SpotifyWrapper);
+
+    this.apiUrl = options.apiUrl || 'https://api.spotify.com/v1';
+    this.token = options.token;
+
+    this.album = _album2.default.bind(this)();
+    this.search = _search2.default.bind(this)();
+  }
+
+  _createClass(SpotifyWrapper, [{
+    key: 'request',
+    value: function request(url) {
+      var headers = {
+        Accept: 'application/json',
+        Authorization: 'Bearer ' + this.token
+      };
+
+      return fetch(url, headers);
+    }
+  }]);
+
+  return SpotifyWrapper;
+}();
 
 /***/ }),
 /* 2 */
@@ -106,20 +139,22 @@ var toJSON = exports.toJSON = function toJSON(data) {
 "use strict";
 
 
-var _search = __webpack_require__(3);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = search;
+function searcher(type, query) {
+  return this.request(this.apiUrl + '/search?q=' + query + '&type=' + type);
+}
 
-var _album = __webpack_require__(4);
-
-module.exports = {
-  search: _search.search,
-  searchAlbums: _search.searchAlbums,
-  searchArtists: _search.searchArtists,
-  searchTracks: _search.searchTracks,
-  searchPlaylists: _search.searchPlaylists,
-  getAlbum: _album.getAlbum,
-  getAlbums: _album.getAlbums,
-  getAlbumTracks: _album.getAlbumTracks
-};
+function search() {
+  return {
+    albums: searcher.bind(this, 'album'),
+    artists: searcher.bind(this, 'artist'),
+    tracks: searcher.bind(this, 'track'),
+    playlists: searcher.bind(this, 'playlist')
+  };
+}
 
 /***/ }),
 /* 3 */
@@ -131,67 +166,22 @@ module.exports = {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.searchPlaylists = exports.searchTracks = exports.searchArtists = exports.searchAlbums = exports.search = undefined;
+exports.default = album;
+function album() {
+  var _this = this;
 
-var _config = __webpack_require__(0);
-
-var _utils = __webpack_require__(1);
-
-//const HttpsProxyAgent = require('https-proxy-agent');
-var search = exports.search = function search(query, type) {
-  return fetch(_config.API_URL + '/search?q=' + query + '&type=' + type, {
-    // agent: new HttpsProxyAgent('http://danmonte:Dapimon3@lnx237in.sjk.emb:9090'),
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: 'Bearer ' + 'BQBUl0lQXCUdy0GY_ILF9FQUixaJdUSNsL0PaaBWmbwOyJP53KGYj8xSgFNOwxBLx5tkjsxQ0k0Fv63Vzx0v4XOOKg4op9gEp3CUrT1IucpRhRRTOM8FGdThyRgRCbQSA6ItjZaGVoaE0Hh2STbw0L2pog'
+  return {
+    getAlbum: function getAlbum(id) {
+      return _this.request(_this.apiUrl + "/albums/" + id);
+    },
+    getAlbums: function getAlbums(ids) {
+      return _this.request(_this.apiUrl + "/albums?ids=" + ids);
+    },
+    getAlbumTracks: function getAlbumTracks(id) {
+      return _this.request(_this.apiUrl + "/albums/" + id + "/tracks");
     }
-  }).then(_utils.toJSON);
-};
-
-var searchAlbums = exports.searchAlbums = function searchAlbums(query) {
-  return search(query, 'album');
-};
-
-var searchArtists = exports.searchArtists = function searchArtists(query) {
-  return search(query, 'artist');
-};
-
-var searchTracks = exports.searchTracks = function searchTracks(query) {
-  return search(query, 'track');
-};
-
-var searchPlaylists = exports.searchPlaylists = function searchPlaylists(query) {
-  return search(query, 'playlist');
-};
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getAlbumTracks = exports.getAlbums = exports.getAlbum = undefined;
-
-var _config = __webpack_require__(0);
-
-var _utils = __webpack_require__(1);
-
-var getAlbum = exports.getAlbum = function getAlbum(id) {
-  return fetch(_config.API_URL + '/albums/' + id).then(_utils.toJSON);
-};
-
-var getAlbums = exports.getAlbums = function getAlbums(ids) {
-  return fetch(_config.API_URL + '/albums?ids=' + ids).then(_utils.toJSON);
-};
-
-var getAlbumTracks = exports.getAlbumTracks = function getAlbumTracks(id) {
-  return fetch(_config.API_URL + '/albums/' + id + '/tracks').then(_utils.toJSON);
-};
+  };
+}
 
 /***/ })
 /******/ ]);
